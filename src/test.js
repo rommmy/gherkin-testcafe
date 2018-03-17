@@ -14,7 +14,7 @@ const paths = [].concat(...specs.map(pattern => glob.sync(pattern)));
 // It also warns, if a step definition could not be found.
 //
 function resolveAndRunStepDefinition(testController, step) {
-    const {expression, implementation} = resolveStepDefinition(step);
+    const { expression, implementation } = resolveStepDefinition(step);
 
     if (expression && implementation) {
         return implementation(
@@ -35,9 +35,13 @@ function createTestFromScenario(scenario) {
         return ;
     }
 
-    test(`Scenario: ${scenario.name}`, t => Promise.all(scenario.steps.map(
-        step => resolveAndRunStepDefinition(t, step)
-    )));
+    test(`Scenario: ${scenario.name}`, async t => {
+        for (const step of scenario.steps) {
+            console.log(step.keyword + step.text);
+
+            await resolveAndRunStepDefinition(t, step);
+        }
+    });
 }
 
 //
@@ -47,9 +51,11 @@ function createTestFromScenario(scenario) {
 // are launched in several browsers.
 //
 function createHookFromBackground(background, fixture) {
-    fixture.beforeEach(t => Promise.all(background.steps.map(
-        step => resolveAndRunStepDefinition(t, step)
-    )));
+    fixture.beforeEach(async t => {
+        for (const step of background.steps) {
+            await resolveAndRunStepDefinition(t, step);
+        }
+    });
 }
 
 function hasBackground(gherkinAst) {
